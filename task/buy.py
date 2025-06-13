@@ -153,9 +153,11 @@ def buy_stream(
 
             tickets_info["again"] = 1
             tickets_info["token"] = request_result["data"]["token"]
+            tickets_info["ptoken"] = request_result["data"]["ptoken"]
+            tickets_info["ctoken"] = "GwAAAAEAAAD/AAIA/wD/AAAAHQAAAAsA/wAAAAAA/wA="
             yield "2）创建订单"
             tickets_info["timestamp"] = int(time.time()) * 100
-            payload = tickets_info
+            payload = tickets_infop
             result = None
             for attempt in range(1, 61):
                 if not isRunning:
@@ -163,7 +165,7 @@ def buy_stream(
                     break
                 try:
                     ret = _request.post(
-                        url=f"https://show.bilibili.com/api/ticket/order/createV2?project_id={tickets_info['project_id']}",
+                        url=f"https://show.bilibili.com/api/ticket/order/createV2?project_id={tickets_info['project_id']}&ptoken={tickets_info['ptoken']}",
                         data=payload,
                         isJson=True,
                     ).json()
