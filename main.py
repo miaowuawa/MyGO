@@ -62,7 +62,7 @@ def main():
         help="Ntfy username (optional). For authenticated ntfy servers.",
     )
     buy_parser.add_argument(
-        "--ntfy_password",
+        "--c",
         type=str,
         default=os.environ.get("BTB_NTFY_PASSWORD", ""),
         help="Ntfy password (optional). For authenticated ntfy servers.",

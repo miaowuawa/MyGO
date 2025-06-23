@@ -1,5 +1,7 @@
 import json
 import time
+import random
+
 import loguru
 import requests
 from util.CookieManager import CookieManager
@@ -22,7 +24,7 @@ class BiliRequest:
             "cookie": "",
             "referer": "https://show.bilibili.com/",
             "priority": "u=1, i",
-            "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/137.0.0.0",
+            "user-agent": "Dalvik/2.1.0 (Linux; U; Android " + str(random.randint(13,15)) + "); V2339FA Build/AP3A.240905.015.A2)",
         }
         self.request_count = 0  # 记录请求次数
 

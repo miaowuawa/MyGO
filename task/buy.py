@@ -337,7 +337,7 @@ def buy_stream(
                     yield "抢票结束"
                     break
                 try:
-                    if tickets_info["ctoken_server"]["url"] != "":
+                    if tickets_info["ctoken_server"]["url"] != "" and is_hot_project:
                         ctoken = risk_client.refresh_ctoken(ctkid=ctkid)
                     else:
                         ctoken = ""
