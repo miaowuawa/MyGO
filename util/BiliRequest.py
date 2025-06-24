@@ -3,7 +3,7 @@ import time
 import random
 
 import loguru
-import requests
+from curl_cffi import requests
 from util.CookieManager import CookieManager
 
 
@@ -11,7 +11,7 @@ class BiliRequest:
     def __init__(
         self, headers=None, cookies=None, cookies_config_path=None, proxy: str = "none"
     ):
-        self.session = requests.Session()
+        self.session = requests.Session(impersonate="chrome101")
         self.proxy_list = proxy.split(",") if proxy else []
         if len(self.proxy_list) == 0:
             raise ValueError("at least have none proxy")
@@ -30,7 +30,7 @@ class BiliRequest:
 
     def count_and_sleep(self, threshold=60, sleep_time=60):
         """
-        当记录到一定次数就sleap
+        当记录到一定次数就sleep
         """
         self.request_count += 1
         if self.request_count % threshold == 0:
