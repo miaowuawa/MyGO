@@ -169,7 +169,7 @@ def buy_stream(
             else:
                 ctoken = ""
             request_result_normal = _request.post(
-                url=f"https://show.bilibili.com/api/ticket/order/prepare?project_id={tickets_info['project_id']}",
+                url=f"https://show.bilibili.com/api/ticket/order/prepare?project_id={tickets_info['project_id']}&requestSource=neul-next",
                 data=token_payload,
                 isJson=True,
             )
@@ -308,7 +308,12 @@ def buy_stream(
             if is_hot_project:
                 tickets_info["ptoken"] = request_result["data"]["ptoken"].rstrip("=")  # 去掉尾部等号（如果有）
 
+            confirm_url = f"https://show.bilibili.com/api/ticket/order/confirmInfo?token={tickets_info['token']}&timestamp={time.time() * 1000}&project_id={tickets_info['project_id']}&ptoken={tickets_info['ptoken']}"
+            confirm_result = _request.get(url=confirm_url, data=tickets_info, isJson=True)
+            yield "订单信息确认：完成，错误码" + confirm_result.status_code
+
             yield "2）创建订单"
+
             tickets_info["timestamp"] = int(time.time()) * 100
             tickets_info["requestSource"] = "neul-next"
             tickets_info["newRisk"] = True
@@ -342,7 +347,7 @@ def buy_stream(
                     else:
                         ctoken = ""
                     response = _request.post(
-                        url=f"https://show.bilibili.com/api/ticket/order/createV2?project_id={tickets_info['project_id']}",
+                        url=f"https://show.bilibili.com/api/ticket/order/createV2?project_id={tickets_info['project_id']}&ptoken={tickets_info['ptoken']}",
                         data=payload,
                         isJson=True,
                     )
