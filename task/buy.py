@@ -1,5 +1,6 @@
 import importlib
 import json
+import random
 import subprocess
 import sys
 import time
@@ -310,7 +311,7 @@ def buy_stream(
 
             confirm_url = f"https://show.bilibili.com/api/ticket/order/confirmInfo?token={tickets_info['token']}&timestamp={time.time() * 1000}&project_id={tickets_info['project_id']}&ptoken={tickets_info['ptoken']}"
             confirm_result = _request.get(url=confirm_url, data=tickets_info, isJson=True)
-            yield "订单信息确认：完成，错误码" + confirm_result.status_code
+            yield "订单信息确认：完成，错误码" + str(confirm_result.status_code)
 
             yield "2）创建订单"
 
@@ -343,9 +344,10 @@ def buy_stream(
                     break
                 try:
                     if tickets_info["ctoken_server"]["url"] != "" and is_hot_project:
-                        ctoken = risk_client.refresh_ctoken(ctkid=ctkid)
+                        ctoken = risk_client.refresh_ctoken(ctkid=ctkid).get('ctoken','')
                     else:
                         ctoken = ""
+                    payload['ctoken'] = ctoken
                     response = _request.post(
                         url=f"https://show.bilibili.com/api/ticket/order/createV2?project_id={tickets_info['project_id']}&ptoken={tickets_info['ptoken']}",
                         data=payload,
@@ -394,16 +396,15 @@ def buy_stream(
 
                     if err == 100051:
                         break
-
-                    time.sleep(interval / 1000)
+                    time.sleep(get_delay(interval))
 
                 except RequestException as e:
                     yield f"[尝试 {attempt}/60] 请求异常: {e}"
-                    time.sleep(interval / 1000)
+                    time.sleep(get_delay(interval))
 
                 except Exception as e:
                     yield f"[尝试 {attempt}/60] 未知异常: {e}"
-                    time.sleep(interval / 1000)
+                    time.sleep(get_delay(interval))
             else:
                 yield "重试次数过多，重新准备订单"
                 continue
@@ -539,3 +540,10 @@ def buy_new_terminal(
     command.extend(["--endpoint_url", endpoint_url])
     proc = subprocess.Popen(command)
     return proc
+
+
+def get_delay(interval):
+    random_factor = random.uniform(0.8, 1.2)
+    delay = max(50, interval * random_factor)
+    return delay / 1000
+

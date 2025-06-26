@@ -197,7 +197,7 @@ class RiskClient:
 deviceid是buvid4
 这个太简单，开源了
         """
-        string = "platform/h5 uid/{uid} channel/{channel} deviceId/{deviceid}".format(
+        string = "appkey/27eb53fc9058f8c3 mVersion/301 model/iPhone%2011 mallVersion/8401000 brand/Apple osver/18.2 platform/h5 uid/{uid} channel/{channel} deviceId/{deviceid}".format(
             uid=uid,
             channel=1,
             deviceid= deviceid
@@ -255,7 +255,7 @@ deviceid是buvid4
             return {"error": "prepare接口返回数据为空，被演了"}
         if prepare_res.get('errno') != 0:
             return {"error": f"prepare接口错误: {prepare_res.get('msg', '未知错误')}"}
-
+ 
         return {
             "new_voucher": prepare_res["data"]["new_voucher"]
         }

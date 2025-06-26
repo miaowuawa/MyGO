@@ -5,7 +5,8 @@ import random
 import loguru
 from curl_cffi import requests
 from util.CookieManager import CookieManager
-
+from util.UA import UAGenerator
+from util.BuvidSessionIdUtil import get_buvid_by_wifi_mac
 
 class BiliRequest:
     def __init__(
@@ -17,6 +18,7 @@ class BiliRequest:
             raise ValueError("at least have none proxy")
         self.now_proxy_idx = 0
         self.cookieManager = CookieManager(cookies_config_path, cookies)
+        self.buvid = get_buvid_by_wifi_mac()
         self.headers = headers or {
             "accept": "*/*",
             "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5,ja;q=0.4",
@@ -24,7 +26,7 @@ class BiliRequest:
             "cookie": "",
             "referer": "https://show.bilibili.com/",
             "priority": "u=1, i",
-            "user-agent": "Dalvik/2.1.0 (Linux; U; Android " + str(random.randint(13,15)) + "); V2339FA Build/AP3A.240905.015.A2)",
+            "user-agent": UAGenerator().generate_mobile_ua(buvid=self.buvid),
         }
         self.request_count = 0  # 记录请求次数
 
@@ -42,6 +44,7 @@ class BiliRequest:
 
     def get(self, url, data=None, isJson=False):
         self.headers["cookie"] = self.cookieManager.get_cookies_str()
+        self.headers["cookie"] += f"Buvid={self.buvid};"
         if isJson:
             self.headers["Content-Type"] = "application/json"
             data = json.dumps(data)
@@ -76,6 +79,7 @@ class BiliRequest:
 
     def post(self, url, data=None, isJson=False):
         self.headers["cookie"] = self.cookieManager.get_cookies_str()
+        self.headers["cookie"] += f" Buvid={self.buvid};"
         if isJson:
             self.headers["content-type"] = "application/json"
             data = json.dumps(data)
