@@ -30,7 +30,6 @@ def get_qrcode_url(_request, order_id) -> str:
     raise ValueError("获取二维码失败")
 
 
-
 def buy_stream(
         tickets_info_str,
         time_start,
@@ -45,7 +44,7 @@ def buy_stream(
         ntfy_username=None,
         ntfy_password=None,
 ):
-    global fesign, buvid3,riskHeader
+    global fesign, buvid3, riskHeader
 
     if bili_ticket_gt_python is None:
         yield "当前设备不支持本地过验证码，无法使用"
@@ -86,7 +85,6 @@ def buy_stream(
     if not fesign or not buvid3:
         logger.warning(f"未找到feSign或buvid3 cookie，当前cookie名称: {[c['name'] for c in cookies]}")
 
-
     #这里这个ticket要检查一下，没有要获取
 
     #ticket = risk_client.get_cookie_ticket("Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1 Edg/137.0.0.0",cookies)
@@ -112,7 +110,7 @@ def buy_stream(
         "order_type": 1,
         "project_id": tickets_info["project_id"],
         "sku_id": tickets_info["sku_id"],
-        "token": "", # ctoken required here 4 HotProject
+        "token": "",  # ctoken required here 4 HotProject
         "newRisk": True,
     }
 
@@ -137,7 +135,6 @@ def buy_stream(
         while time.perf_counter() < end_time:
             pass
 
-
     while is_running:
         try:
             # 如果是热门项目且需要刷新ctoken
@@ -150,8 +147,9 @@ def buy_stream(
                         yield f"刷新ctoken成功: {ctoken[:10]}..."
                     else:
                         # 首次获取ctoken
-                        init_result = risk_client.get_ctoken(screen_width=tickets_info_dict['ctoken_server']['screen_width'],
-                                                             screen_height=tickets_info_dict['ctoken_server']['screen_height'])
+                        init_result = risk_client.get_ctoken(
+                            screen_width=tickets_info_dict['ctoken_server']['screen_width'],
+                            screen_height=tickets_info_dict['ctoken_server']['screen_height'])
                         ctoken = init_result.get("ctoken", "")
                         ctkid = init_result.get("ctkid", "")
                         yield f"获取初始ctoken成功: {ctoken[:10]}..."
@@ -260,7 +258,8 @@ def buy_stream(
                             yield "验证码成功"
                         elif code == 100044:
                             yield "检测到100044错误码，尝试新的验证码处理方式"
-                            voucher_result = risk_client.get_new_voucher(_request,tickets_info["project_id"],tickets_info["screen_id"])
+                            voucher_result = risk_client.get_new_voucher(_request, tickets_info["project_id"],
+                                                                         tickets_info["screen_id"])
                             if "error" in voucher_result:
                                 yield f"新的验证码处理失败: {voucher_result['error']}"
                             else:
@@ -302,14 +301,16 @@ def buy_stream(
                     yield f"prepare请求异常: {e}"
                     continue
 
-
             tickets_info["again"] = 1
             tickets_info["ticket_agent"] = ""
             tickets_info["token"] = request_result["data"]["token"]
-            if is_hot_project:
+            confirm_url = f"https://show.bilibili.com/api/ticket/order/confirmInfo?token={tickets_info['token']}&timestamp={time.time() * 1000}&project_id={tickets_info['project_id']}"
+            if is_hot_project and request_result["data"]["ptoken"] is not None and request_result["data"]["ptoken"] != '':
                 tickets_info["ptoken"] = request_result["data"]["ptoken"].rstrip("=")  # 去掉尾部等号（如果有）
+                confirm_url += f"&ptoken={tickets_info['ptoken']}"
+            else:
+                tickets_info["ptoken"] = ""
 
-            confirm_url = f"https://show.bilibili.com/api/ticket/order/confirmInfo?token={tickets_info['token']}&timestamp={time.time() * 1000}&project_id={tickets_info['project_id']}&ptoken={tickets_info['ptoken']}"
             confirm_result = _request.get(url=confirm_url, data=tickets_info, isJson=True)
             yield "订单信息确认：完成，错误码" + str(confirm_result.status_code)
 
@@ -318,7 +319,7 @@ def buy_stream(
             tickets_info["timestamp"] = int(time.time()) * 100
             tickets_info["requestSource"] = "neul-next"
             tickets_info["newRisk"] = True
-            tickets_info["coupon_code"] = "" # 优惠券码不使用
+            tickets_info["coupon_code"] = ""  # 优惠券码不使用
             tickets_info["deviceId"] = deviceid
 
             # 根据是否是重试请求设置不同的点击位置
@@ -344,16 +345,18 @@ def buy_stream(
                     break
                 try:
                     if tickets_info["ctoken_server"]["url"] != "" and is_hot_project:
-                        ctoken = risk_client.refresh_ctoken(ctkid=ctkid).get('ctoken','')
+                        ctoken = risk_client.refresh_ctoken(ctkid=ctkid).get('ctoken', '')
                     else:
                         ctoken = ""
                     payload['ctoken'] = ctoken
+                    create_url = f"https://show.bilibili.com/api/ticket/order/createV2?project_id={tickets_info['project_id']}"
+                    if is_hot_project:
+                        create_url += f"&ptoken={tickets_info['ptoken']}"
                     response = _request.post(
-                        url=f"https://show.bilibili.com/api/ticket/order/createV2?project_id={tickets_info['project_id']}&ptoken={tickets_info['ptoken']}",
+                        url=create_url,
                         data=payload,
                         isJson=True,
                     )
-
                     # 添加调试信息
                     yield f"调试信息 - 请求URL: {response.url}"
                     yield f"调试信息 - 状态码: {response.status_code}"
@@ -546,4 +549,3 @@ def get_delay(interval):
     random_factor = random.uniform(0.8, 1.2)
     delay = max(50, interval * random_factor)
     return delay / 1000
-

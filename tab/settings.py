@@ -357,7 +357,7 @@ def setting_tab():
     with gr.Column(variant="compact"):
         ctoken_server_ui = gr.Textbox(
             label="ctoken服务器地址，没有请留空",
-            value="http://localhost:8080",
+            value="",
             placeholder="请输入ctoken服务器地址",
             info="使用官方api启动后填写: http://localhost:8080"
         )
