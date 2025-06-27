@@ -94,7 +94,7 @@ def function_test_tab():
     with gr.Row():
         ticket_server_ui = gr.Textbox(
             label="服务器地址",
-            value="http://localhost:8080",
+            value="",
             placeholder="请输入服务器地址"
         )
         user_agent_ui = gr.Textbox(
