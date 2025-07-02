@@ -95,7 +95,7 @@ GET http://localhost:8080/get/xXxXxXxXxXxXxXxXxXxX
 - Telegram联系: @miaowuawa
 - QQ联系：2022505032
 - 特点: 低延迟、高并发、免费使用
-- 要求: 需要提供一些基本信息以验证身份
+- 要求: 没有了，加好友就给
 
 ### 使用建议
 
